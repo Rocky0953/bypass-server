@@ -1,12 +1,19 @@
 from flask import Flask, request, jsonify
-import subprocess, os, sys
-
-# Install deps without sudo
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/opt/render/.cache/ms-playwright"
-
 from playwright.sync_api import sync_playwright
+import os
+
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = \
+    "/opt/render/.cache/ms-playwright"
 
 app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Bypass Server Running! ✅"
+
+@app.route("/ping")
+def ping():
+    return jsonify({"status": "ok"})
 
 @app.route("/bypass")
 def bypass():
@@ -17,11 +24,11 @@ def bypass():
         with sync_playwright() as p:
             browser = p.chromium.launch(
                 headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox"]
+                args=["--no-sandbox","--disable-setuid-sandbox"]
             )
             page = browser.new_page()
             page.goto(url, wait_until="networkidle", timeout=30000)
-            for btn in ["Skip", "Continue", "Get Link"]:
+            for btn in ["Skip","Continue","Get Link","Proceed","Skip Ad"]:
                 try:
                     page.click(f"text={btn}", timeout=3000)
                     page.wait_for_timeout(2000)
@@ -29,15 +36,11 @@ def bypass():
                     pass
             final = page.url
             browser.close()
-            if final != url:
+            if final and final != url:
                 return jsonify({"final_url": final})
             return jsonify({"error": "Same URL"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route("/")
-def home():
-    return "Bypass Server Running!"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
