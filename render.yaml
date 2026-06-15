@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: bypass-server
-    env: python
-    buildCommand: pip install -r requirements.txt && playwright install chromium && playwright install-deps
-    startCommand: python server.py
-    plan: free
